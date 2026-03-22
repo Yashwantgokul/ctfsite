@@ -60,6 +60,13 @@ const challenges = {
         type: 'nc',
         username: '',
         password: ''
+    },
+    '7': {
+        image: 'padam-converter',
+        port: 80,
+        type: 'http',
+        username: '',
+        password: ''
     }
 };
 

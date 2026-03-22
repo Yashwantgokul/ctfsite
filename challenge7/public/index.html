@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padam Converter - Internal Video Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 580px;
+            width: 100%;
+            background: rgba(30, 30, 46, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 35px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        }
+        .logo { text-align: center; margin-bottom: 5px; }
+        .logo span { font-size: 2.5rem; }
+        h1 { text-align: center; color: #e74c3c; font-size: 1.6rem; margin-bottom: 4px; font-weight: 700; }
+        p.subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 28px; line-height: 1.5; }
+        p.subtitle small { color: #666; }
+
+        .upload-area {
+            border: 2px dashed #3a3a5c;
+            padding: 35px 20px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover { border-color: #e74c3c; background: rgba(231, 76, 60, 0.05); }
+        .upload-area.dragover { border-color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+        #file-name { color: #777; font-size: 14px; }
+        #file-name.selected { color: #7ee787; }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(231,76,60,0.4); }
+        .btn:disabled { background: #444; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .error-msg {
+            color: #e74c3c;
+            margin-top: 14px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 13px;
+            min-height: 20px;
+        }
+
+        #video-container {
+            display: none;
+            margin-top: 28px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+        #video-container h3 {
+            color: #fff;
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        video {
+            width: 100%;
+            max-height: 360px;
+            border-radius: 10px;
+            background: #000;
+            outline: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .download-link {
+            display: inline-block;
+            margin-top: 12px;
+            color: #58a6ff;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .download-link:hover { text-decoration: underline; }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #555;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"><span>🎞️</span></div>
+        <h1>Padam Converter</h1>
+        <p class="subtitle">
+            Sundar's Internal Distribution Engine v1.0
+            <br><small>Allowed formats: .avi, .mov &nbsp;|&nbsp; Max 10 MB</small>
+        </p>
+
+        <form id="upload-form">
+            <div class="upload-area" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <div id="file-name">Click or drag a video file here</div>
+                <input type="file" id="file-input" style="display: none;" accept=".avi,.mov">
+            </div>
+            <button type="submit" id="submit-btn" class="btn" disabled>Convert to MP4</button>
+        </form>
+
+        <div id="error-msg" class="error-msg"></div>
+
+        <div id="video-container">
+            <h3>✅ Converted Output</h3>
+            <video id="output-video" controls autoplay></video>
+            <a id="download-link" class="download-link" href="#" download>⬇ Download MP4</a>
+        </div>
+
+        <div class="footer">Internal use only &mdash; Unauthorized access is monitored</div>
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const fileInput = document.getElementById('file-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const fileNameDiv = document.getElementById('file-name');
+        const videoContainer = document.getElementById('video-container');
+        const outputVideo = document.getElementById('output-video');
+        const downloadLink = document.getElementById('download-link');
+        const errorMsg = document.getElementById('error-msg');
+        const dropZone = document.getElementById('drop-zone');
+
+        // Drag & drop
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+        });
+        dropZone.addEventListener('drop', e => {
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            errorMsg.textContent = '';
+            submitBtn.disabled = true;
+            fileNameDiv.className = '';
+
+            if (e.target.files.length === 0) return;
+            const file = e.target.files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+
+            if (ext !== 'avi' && ext !== 'mov') {
+                errorMsg.textContent = 'Invalid file extension! Only .avi and .mov are permitted by the system.';
+                fileNameDiv.textContent = file.name;
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                errorMsg.textContent = 'File too large! Must be under 10MB.';
+                fileNameDiv.textContent = file.name;
+                return;
+            }
+
+            fileNameDiv.textContent = '📁 ' + file.name;
+            fileNameDiv.className = 'selected';
+            submitBtn.disabled = false;
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Processing with FFmpeg...';
+            errorMsg.textContent = '';
+            videoContainer.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('video', file);
+
+            try {
+                const res = await fetch('/api/convert', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.success) {
+                    videoContainer.style.display = 'block';
+                    outputVideo.src = data.videoUrl;
+                    downloadLink.href = data.videoUrl;
+                } else {
+                    errorMsg.textContent = data.error || 'Conversion failed.';
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Network error during upload.';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Convert to MP4';
+            }
+        });
+    </script>
+</body>
+</html>

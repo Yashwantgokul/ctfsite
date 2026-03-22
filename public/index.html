@@ -487,6 +487,12 @@
                     <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
                     <button id="btn-start-2" onclick="startInstance('2')">Deploy & Start</button>
                 </div>
+                <div class="card">
+                    <h2>7. Padam Converter</h2>
+                    <span class="badge badge-medium">Medium</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-7" onclick="startInstance('7')">Deploy & Start</button>
+                </div>
             </div>
         </div>
 
@@ -633,6 +639,10 @@
         '6': {
             title: '6. Secure Vault (Blockchain)',
             desc: 'Sometimes external calls can be dangerous... We built a safe vault for storing ETH. Goal: Drain the vault completely to retrieve the flag.'
+        },
+        '7': {
+            title: '7. Padam Converter',
+            desc: 'You have gained access to Sundar\u2019s internal video conversion portal. This system processes and distributes pirated films. Exploit the converter to retrieve the secret distribution list. Hint: The output video itself might be the data leak channel.'
         }
     };
 
@@ -684,6 +694,10 @@
             document.getElementById('btn-start-6').textContent = "Deploy & Start";
             document.getElementById('btn-start-6').disabled = false;
         }
+        if(document.getElementById('btn-start-7')) {
+            document.getElementById('btn-start-7').textContent = "Deploy & Start";
+            document.getElementById('btn-start-7').disabled = false;
+        }
     }
 
     function showChallengeDetails() {
@@ -723,6 +737,8 @@
             document.getElementById('active-title').textContent = "Active Challenge: 5. pwfeedback Overflow (CVE-2019-18634)";
         } else if (activeChallengeId === '6') {
             document.getElementById('active-title').textContent = "Active Challenge: 6. Secure Vault (Blockchain)";
+        } else if (activeChallengeId === '7') {
+            document.getElementById('active-title').textContent = "Active Challenge: 7. Padam Converter";
         }
 
         // Show details automatically upon successful start
