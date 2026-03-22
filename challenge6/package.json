@@ -1,0 +1,10 @@
+{
+  "name": "secure-vault-sc",
+  "version": "1.0.0",
+  "description": "Secure Vault Challenge",
+  "main": "server.js",
+  "dependencies": {
+    "ethers": "^6.11.1",
+    "solc": "0.8.20"
+  }
+}

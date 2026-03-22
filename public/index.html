@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTF Testing Platform</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --text-color: #c9d1d9;
+            --primary: #2ea043;
+            --primary-hover: #2c974b;
+            --accent: #58a6ff;
+            --danger: #da3633;
+            --warning: #e3b341;
+            --border: #30363d;
+            --navbar-bg: #010409;
+            --card-hover: #1c2128;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--navbar-bg);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .navbar-brand {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .btn-cli-toggle {
+            background-color: #21262d;
+            border: 1px solid var(--border);
+            color: #c9d1d9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-cli-toggle:hover {
+            background-color: #30363d;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 40px 20px;
+            padding-bottom: 45vh; /* leave space for shell */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .category-section {
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        
+        .category-header {
+            font-size: 1.5rem;
+            color: #fff;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        /* Challenge Card */
+        .card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: background-color 0.2s;
+        }
+        .card:hover {
+            background-color: var(--card-hover);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 11px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .badge-easy { background-color: rgba(46, 160, 67, 0.15); color: #7ee787; border: 1px solid rgba(46, 160, 67, 0.4); }
+        .badge-medium { background-color: rgba(227, 179, 65, 0.15); color: #e3b341; border: 1px solid rgba(227, 179, 65, 0.4); }
+
+        p.desc-hidden {
+            font-size: 13px;
+            font-style: italic;
+            color: #484f58;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: #fff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button:hover { background-color: var(--primary-hover); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            background-color: #21262d;
+            border-color: rgba(240, 246, 252, 0.1);
+        }
+        .btn-secondary:hover {
+            background-color: #30363d;
+        }
+
+        .btn-restart {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: #c9d1d9;
+            width: auto;
+            margin: 0;
+            padding: 5px 10px;
+        }
+        .btn-restart:hover {
+            background-color: #30363d;
+        }
+
+        /* Submission Block */
+        .submission-area {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .submission-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--navbar-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: #fff;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(88,166,255,0.3);
+        }
+
+        .result { margin-top: 15px; font-weight: bold; min-height: 20px; }
+        .success { color: var(--primary); }
+        .error { color: var(--danger); }
+
+        /* Active Connection Details Modal/Panel */
+        #active-panel {
+            display: none;
+            background-color: #010409;
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(88,166,255,0.1);
+        }
+        .active-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .active-header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        #active-panel p { margin: 5px 0; font-size: 14px; font-family: monospace; }
+        #active-panel .label { color: #8b949e; }
+        #active-panel .value { color: #7ee787; }
+        #active-panel .highlight { color: var(--accent); font-weight: bold; }
+        #active-panel a { color: var(--accent); text-decoration: none; }
+        #active-panel a:hover { text-decoration: underline; }
+
+        /* Modal styling */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #fff;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            padding-right: 20px;
+        }
+
+        .modal-content p {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #c9d1d9;
+        }
+
+        .details-box {
+            background-color: #010409;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+
+        .details-box p { font-size: 14px; margin: 5px 0; color: #c9d1d9; }
+        .details-box .label { color: #8b949e; }
+        .details-box .value { color: #7ee787; }
+        .details-box .highlight { color: var(--accent); font-weight: bold; }
+        .details-box a { color: var(--accent); text-decoration: none; }
+        .details-box a:hover { text-decoration: underline; }
+
+        .btn-close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 16px;
+            width: auto;
+            padding: 5px 10px;
+        }
+        .btn-close-modal:hover {
+            color: #fff;
+        }
+
+        /* Cloud Shell */
+        .resizer {
+            height: 5px;
+            background-color: var(--border);
+            cursor: ns-resize;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .resizer:hover { background-color: var(--accent); }
+
+        .cloud-shell {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 45vh;
+            background-color: #000;
+            border-top: 1px solid var(--border);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .shell-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #21262d;
+            padding: 5px 15px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .shell-title { color: #c9d1d9; font-weight: 500; }
+
+        .shell-controls button {
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            padding: 4px 8px;
+            margin: 0;
+            width: auto;
+        }
+        .shell-controls button:hover { color: #fff; }
+
+        .shell-tabs {
+            display: flex;
+            background-color: #161b22;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .shell-tab {
+            padding: 6px 15px;
+            background: transparent;
+            color: #8b949e;
+            border: none;
+            border-right: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .shell-tab.active {
+            background: #0d1117;
+            color: #c9d1d9;
+            font-weight: 500;
+            border-top: 2px solid var(--accent);
+        }
+        .shell-tab:hover:not(.active) {
+            background: #21262d;
+            color: #fff;
+        }
+        .shell-tab-close {
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0 2px;
+        }
+        .shell-tab-close:hover {
+            color: var(--danger);
+        }
+        .shell-tab-add {
+            padding: 6px 15px;
+            background: transparent;
+            color: #8b949e;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .shell-tab-add:hover {
+            color: #fff;
+            background: #21262d;
+        }
+        .iframe-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+        }
+        .kali-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .kali-frame.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="navbar-brand">CTF Platform</div>
+    <button class="btn-cli-toggle" onclick="toggleWebCLI()">💻 Open Web CLI</button>
+</div>
+
+<div class="main-content">
+    <div class="container">
+        <!-- Active Instance Banner -->
+        <div id="active-panel" style="display:none; background-color: #010409; border: 1px solid var(--accent); border-radius: 6px; padding: 15px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(88,166,255,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: #fff; font-size: 16px;" id="active-title">Active Challenge</strong>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-secondary" style="width: auto; margin:0; padding: 5px 10px;" onclick="showChallengeDetails()">📖 Open Workspace</button>
+                    <button class="btn-restart" style="width: auto; margin:0; padding: 5px 10px;" onclick="restartInstance()">Restart</button>
+                    <button class="btn-secondary" style="width: auto; margin:0; padding: 5px 10px; color: var(--danger); border-color: rgba(218, 54, 51, 0.4);" onclick="stopInstance()">Terminate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privilege Escalation -->
+        <div class="category-section">
+            <h2 class="category-header">🛡️ Privilege Escalation</h2>
+            <div class="challenges-grid">
+                <div class="card">
+                    <h2>1. Linux Privilege Escalation</h2>
+                    <span class="badge badge-medium">Medium</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-1" onclick="startInstance('1')">Deploy & Start</button>
+                </div>
+                <div class="card">
+                    <h2>5. pwfeedback Overflow</h2>
+                    <span class="badge badge-medium">Medium</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-5" onclick="startInstance('5')">Deploy & Start</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Web Exploitation -->
+        <div class="category-section">
+            <h2 class="category-header">🌐 Web Exploitation</h2>
+            <div class="challenges-grid">
+                <div class="card">
+                    <h2>2. Hidden in Plain Sight</h2>
+                    <span class="badge badge-easy">Easy</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-2" onclick="startInstance('2')">Deploy & Start</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Binary Exploitation -->
+        <div class="category-section">
+            <h2 class="category-header">⚙️ Binary Exploitation</h2>
+            <div class="challenges-grid">
+                <div class="card">
+                    <h2>3. Stack Smash Starter</h2>
+                    <span class="badge badge-easy">Easy</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-3" onclick="startInstance('3')">Deploy & Start</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cryptography -->
+        <div class="category-section">
+            <h2 class="category-header">🧮 Cryptography</h2>
+            <div class="challenges-grid">
+                <div class="card">
+                    <h2>4. Two is Prime</h2>
+                    <span class="badge badge-easy">Easy</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-4" onclick="startInstance('4')">Deploy & Start</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blockchain -->
+        <div class="category-section">
+            <h2 class="category-header">🔗 Blockchain</h2>
+            <div class="challenges-grid">
+                <div class="card">
+                    <h2>6. Secure Vault (Blockchain)</h2>
+                    <span class="badge badge-medium">Medium</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-6" onclick="startInstance('6')">Deploy & Start</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Challenge Details Modal -->
+<div id="challenge-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 650px;">
+        <button class="btn-close-modal" onclick="closeChallengeDetails()">✖</button>
+        <h3 id="modal-title" style="margin-bottom: 5px;">Challenge Details</h3>
+        <p id="modal-desc" style="margin-top: 0;">Description appears here...</p>
+
+        <div id="modal-ssh-details" class="details-box" style="display:none;">
+            <p><span class="label">External SSH (Your System):</span> <span class="value" id="ssh-external"></span></p>
+            <hr style="border:0; border-top:1px solid #30363d; margin:10px 0;">
+            <p><span class="label highlight">Target Internal IP:</span> <span class="value highlight" id="ssh-internal"></span></p>
+            <p><span class="label">Username:</span> <span class="value" id="ssh-username">walter</span></p>
+            <p><span class="label">Password:</span> <span class="value" id="ssh-password">12345678</span></p>
+            <p style="margin-top: 10px; color:#8b949e; font-size: 12px;"><i>To connect from the Web CLI, run: <br><strong style="color:#7ee787;" id="ssh-internal-cmd"></strong></i></p>
+        </div>
+
+        <div id="modal-http-details" class="details-box" style="display:none;">
+            <p><span class="label">External Web Link:</span> <a href="#" target="_blank" class="value" style="font-size:16px;" id="http-external"></a></p>
+            <hr style="border:0; border-top:1px solid #30363d; margin:10px 0;">
+            <p><span class="label highlight">Target Internal IP:</span> <span class="value highlight" id="http-internal"></span></p>
+            <p style="margin-top: 10px; color:#8b949e; font-size: 12px;"><i>To access from the Web CLI, run: <br><strong style="color:#7ee787;" id="http-internal-cmd"></strong></i></p>
+        </div>
+
+        <div id="modal-nc-details" class="details-box" style="display:none;">
+            <p><span class="label">External Netcat:</span> <span class="value" id="nc-external"></span></p>
+            <p id="nc-rpc-row" style="display:none; margin-top: 5px;"><span class="label">RPC URL:</span> <a href="#" target="_blank" class="value" style="font-size:14px;" id="nc-rpc-external"></a></p>
+            <hr style="border:0; border-top:1px solid #30363d; margin:10px 0;">
+            <p><span class="label highlight">Target Internal IP:</span> <span class="value highlight" id="nc-internal"></span></p>
+            <p style="margin-top: 10px; color:#8b949e; font-size: 12px;"><i>To connect from the Web CLI, run: <br><strong style="color:#7ee787;" id="nc-internal-cmd"></strong></i></p>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #30363d; margin:20px 0;">
+        <h4 style="margin: 0 0 10px 0; color: #fff;">Submit Flag</h4>
+        <div class="submission-form" style="margin-top: 0;">
+            <input type="text" id="flag-input" placeholder="Enter flag (e.g. 5f4d...yg)">
+            <button style="width: 150px; margin:0;" onclick="submitFlag()">Check Flag</button>
+        </div>
+        <div id="result-msg" class="result"></div>
+    </div>
+</div>
+
+<div class="cloud-shell" id="cloud-shell">
+    <div class="resizer" id="shell-resizer"></div>
+    <div class="shell-header">
+        <div class="shell-title">Web CLI (Attacker Machine)</div>
+        <div class="shell-controls">
+            <button onclick="refreshWebCLI()" title="Reconnect">↻</button>
+            <button onclick="toggleWebCLI()" title="Close">✖</button>
+        </div>
+    </div>
+    <div class="shell-tabs" id="shell-tabs-container">
+        <!-- Tabs will be dynamically inserted here -->
+        <button class="shell-tab-add" onclick="addNewTab()" title="New Tab">+</button>
+    </div>
+    <div class="iframe-container" id="iframe-container">
+        <!-- Iframes will be dynamically inserted here -->
+    </div>
+</div>
+
+<script>
+    const resultMsg = document.getElementById('result-msg');
+    const modal = document.getElementById('challenge-modal');
+    
+    // Cloud shell vars
+    const shellPanel = document.getElementById('cloud-shell');
+    const resizer = document.getElementById('shell-resizer');
+    const iframeContainer = document.getElementById('iframe-container');
+    const shellTabsContainer = document.getElementById('shell-tabs-container');
+    let isCliRunning = false;
+    let isResizing = false;
+    let kaliBaseUrl = '';
+    
+    let tabsCount = 0;
+    let activeTabId = null;
+    let tabList = [];
+
+    // Challenge Descriptions
+    const challengeDetails = {
+        '1': {
+            title: '1. Linux Privilege Escalation',
+            desc: 'Connect to the box via SSH. This challenge tests your ability to find simple misconfigurations on a Linux system. Your goal is to escalate your privileges to root and read the flag located at /root/flag.txt.'
+        },
+        '2': {
+            title: '2. Hidden in Plain Sight',
+            desc: 'Search engines don\'t always index everything. Inspect the deployed web server to find hidden areas. A common file intended for web crawlers might give away the secret endpoint holding your flag!'
+        },
+        '3': {
+            title: '3. Stack Smash Starter',
+            desc: 'Connect via SSH and examine the "vuln" binary in your home directory (/home/ctf). It suffers from a classic buffer overflow vulnerability (gets). Your goal is to overwrite the instruction pointer (RIP) and redirect execution to the hidden win() function to read the flag!'
+        },
+        '4': {
+            title: '4. Two is Prime',
+            desc: 'A fatally flawed RSA setup where one of the primes is intentionally weak. Connect via netcat, analyze the provided RSA parameters (n, e, c), factor n, compute the private key, and decrypt the ciphertext to retrieve the flag.'
+        },
+        '5': {
+            title: '5. pwfeedback Overflow (CVE-2019-18634)',
+            desc: 'You have gained access to an internal Linux system as a normal user. A flaw in how sudo processes the pwfeedback option (asterisks during password entry) under older versions like 1.8.21 allows a stack-based buffer overflow. Exploit this to get the flag at /root/flag.txt!'
+        },
+        '6': {
+            title: '6. Secure Vault (Blockchain)',
+            desc: 'Sometimes external calls can be dangerous... We built a safe vault for storing ETH. Goal: Drain the vault completely to retrieve the flag.'
+        }
+    };
+
+    // Resizer logic
+    resizer.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        document.body.style.cursor = 'ns-resize';
+        document.querySelectorAll('.kali-frame').forEach(f => f.style.pointerEvents = 'none');
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const newHeight = window.innerHeight - e.clientY;
+        if (newHeight > 100 && newHeight < window.innerHeight - 60) {
+            shellPanel.style.height = `${newHeight}px`;
+        }
+    });
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = 'default';
+            document.querySelectorAll('.kali-frame').forEach(f => f.style.pointerEvents = '');
+        }
+    });
+
+    let activeChallengeId = null;
+
+    function resetLoadingStates() {
+        if(document.getElementById('btn-start-1')) {
+            document.getElementById('btn-start-1').textContent = "Deploy & Start";
+            document.getElementById('btn-start-1').disabled = false;
+        }
+        if(document.getElementById('btn-start-2')) {
+            document.getElementById('btn-start-2').textContent = "Deploy & Start";
+            document.getElementById('btn-start-2').disabled = false;
+        }
+        if(document.getElementById('btn-start-3')) {
+            document.getElementById('btn-start-3').textContent = "Deploy & Start";
+            document.getElementById('btn-start-3').disabled = false;
+        }
+        if(document.getElementById('btn-start-4')) {
+            document.getElementById('btn-start-4').textContent = "Deploy & Start";
+            document.getElementById('btn-start-4').disabled = false;
+        }
+        if(document.getElementById('btn-start-5')) {
+            document.getElementById('btn-start-5').textContent = "Deploy & Start";
+            document.getElementById('btn-start-5').disabled = false;
+        }
+        if(document.getElementById('btn-start-6')) {
+            document.getElementById('btn-start-6').textContent = "Deploy & Start";
+            document.getElementById('btn-start-6').disabled = false;
+        }
+    }
+
+    function showChallengeDetails() {
+        if (!activeChallengeId) return;
+        const details = challengeDetails[activeChallengeId];
+        document.getElementById('modal-title').textContent = details.title;
+        document.getElementById('modal-desc').textContent = details.desc;
+        modal.style.display = 'flex';
+    }
+
+    function closeChallengeDetails() {
+        modal.style.display = 'none';
+    }
+
+    function populateDetails(data) {
+        activeChallengeId = data.challengeId || '1'; // Fallback for old server cache
+        
+        document.getElementById('active-panel').style.display = 'block';
+        document.getElementById('flag-input').value = '';
+        if(document.getElementById('result-msg')) document.getElementById('result-msg').textContent = '';
+
+        document.getElementById('modal-ssh-details').style.display = 'none';
+        document.getElementById('modal-http-details').style.display = 'none';
+        if (document.getElementById('modal-nc-details')) {
+            document.getElementById('modal-nc-details').style.display = 'none';
+        }
+
+        if (activeChallengeId === '1') {
+            document.getElementById('active-title').textContent = "Active Challenge: 1. Linux Privilege Escalation";
+        } else if (activeChallengeId === '2') {
+            document.getElementById('active-title').textContent = "Active Challenge: 2. Hidden in Plain Sight";
+        } else if (activeChallengeId === '3') {
+            document.getElementById('active-title').textContent = "Active Challenge: 3. Stack Smash Starter";
+        } else if (activeChallengeId === '4') {
+            document.getElementById('active-title').textContent = "Active Challenge: 4. Two is Prime";
+        } else if (activeChallengeId === '5') {
+            document.getElementById('active-title').textContent = "Active Challenge: 5. pwfeedback Overflow (CVE-2019-18634)";
+        } else if (activeChallengeId === '6') {
+            document.getElementById('active-title').textContent = "Active Challenge: 6. Secure Vault (Blockchain)";
+        }
+
+        // Show details automatically upon successful start
+        showChallengeDetails();
+
+        // Fallback type for old server cache
+        const type = data.type || (activeChallengeId === '2' ? 'http' : 'ssh');
+
+        if (type === 'ssh') {
+            const user = data.username || 'walter';
+            const pass = data.password || '12345678';
+            document.getElementById('modal-ssh-details').style.display = 'block';
+            document.getElementById('ssh-external').textContent = `ssh ${user}@${data.ip} -p ${data.port}`;
+            document.getElementById('ssh-internal').textContent = data.internalIp;
+            document.getElementById('ssh-username').textContent = user;
+            document.getElementById('ssh-password').textContent = pass;
+            document.getElementById('ssh-internal-cmd').textContent = `ssh ${user}@${data.internalIp}`;
+        } else if (type === 'http') {
+            document.getElementById('modal-http-details').style.display = 'block';
+            const url = `http://${data.ip || 'localhost'}:${data.port}`;
+            const el = document.getElementById('http-external');
+            el.textContent = url + ' ↗';
+            el.href = url;
+            
+            document.getElementById('http-internal').textContent = data.internalIp;
+            document.getElementById('http-internal-cmd').textContent = `curl http://${data.internalIp}`;
+        } else if (type === 'nc') {
+            document.getElementById('modal-nc-details').style.display = 'block';
+            document.getElementById('nc-external').textContent = `nc ${data.ip} ${data.port}`;
+            
+            if (data.rpcPort) {
+                const rpcUrl = `http://${data.ip}:${data.rpcPort}`;
+                document.getElementById('nc-rpc-row').style.display = 'block';
+                document.getElementById('nc-rpc-external').textContent = rpcUrl;
+                document.getElementById('nc-rpc-external').href = rpcUrl;
+            } else {
+                document.getElementById('nc-rpc-row').style.display = 'none';
+            }
+
+            document.getElementById('nc-internal').textContent = data.internalIp;
+            document.getElementById('nc-internal-cmd').textContent = `nc ${data.internalIp} 1337`;
+        }
+    }
+
+    async function startInstance(challengeId) {
+        resetLoadingStates();
+        const btn = document.getElementById(`btn-start-${challengeId}`);
+        btn.textContent = "Deploying...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/start', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ challengeId })
+            });
+            const data = await res.json();
+            if(data.error) throw new Error(data.error);
+            populateDetails(data);
+        } catch (err) {
+            alert('Failed to deploy instance: ' + err.message);
+        }
+        resetLoadingStates();
+    }
+
+    async function restartInstance() {
+        if(!confirm('This will destroy your current instance. Continue?')) return;
+        
+        try {
+            const res = await fetch('/restart', { method: 'POST' });
+            const data = await res.json();
+            if(data.error) throw new Error(data.error);
+            populateDetails(data);
+        } catch (err) {
+            alert('Failed to restart instance: ' + err.message);
+        }
+    }
+
+    async function stopInstance() {
+        if(!confirm('Are you sure you want to completely terminate the active challenge instance?')) return;
+        
+        try {
+            const res = await fetch('/stop', { method: 'POST' });
+            await res.json();
+            
+            // Revert UI to empty state
+            document.getElementById('active-panel').style.display = 'none';
+            document.getElementById('modal-ssh-details').style.display = 'none';
+            document.getElementById('modal-http-details').style.display = 'none';
+            closeChallengeDetails();
+            activeChallengeId = null;
+        } catch (err) {
+            alert('Failed to terminate instance: ' + err.message);
+        }
+    }
+    
+    async function toggleWebCLI() {
+        if (shellPanel.style.display === 'flex') {
+            shellPanel.style.display = 'none';
+        } else {
+            shellPanel.style.display = 'flex';
+            if (!isCliRunning) {
+                await startWebCLI();
+            }
+        }
+    }
+    
+    async function refreshWebCLI() {
+        if (isCliRunning && activeTabId !== null) {
+            const activeFrame = document.getElementById(`kali-frame-${activeTabId}`);
+            if (activeFrame) activeFrame.src = activeFrame.src;
+        } else {
+            await startWebCLI();
+        }
+    }
+
+    async function startWebCLI() {
+        document.querySelector('.shell-title').textContent = "Starting Web CLI...";
+        try {
+            const res = await fetch('/start-kali', { method: 'POST' });
+            const data = await res.json();
+            if(data.error) throw new Error(data.error);
+            
+            kaliBaseUrl = data.url;
+            isCliRunning = true;
+            document.querySelector('.shell-title').textContent = "Web CLI (Attacker Machine)";
+            
+            tabList = [];
+            document.querySelectorAll('.shell-tab').forEach(e => e.remove());
+            iframeContainer.innerHTML = '';
+            tabsCount = 0;
+            
+            addNewTab();
+        } catch(err) {
+            document.querySelector('.shell-title').textContent = "Web CLI Error";
+            alert('Failed to start Web CLI: ' + err.message);
+        }
+    }
+
+    function addNewTab() {
+        if (!kaliBaseUrl) return;
+        tabsCount++;
+        const tabId = tabsCount;
+        tabList.push(tabId);
+        
+        const iframe = document.createElement('iframe');
+        iframe.id = `kali-frame-${tabId}`;
+        iframe.className = 'kali-frame';
+        iframe.src = kaliBaseUrl;
+        iframeContainer.appendChild(iframe);
+        
+        const tabBtn = document.createElement('div');
+        tabBtn.className = 'shell-tab';
+        tabBtn.id = `shell-tab-${tabId}`;
+        tabBtn.onclick = () => switchTab(tabId);
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = `Tab ${tabId}`;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'shell-tab-close';
+        closeBtn.innerHTML = '✖';
+        closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            closeTab(tabId);
+        };
+        
+        tabBtn.appendChild(titleSpan);
+        tabBtn.appendChild(closeBtn);
+        
+        const addBtn = document.querySelector('.shell-tab-add');
+        shellTabsContainer.insertBefore(tabBtn, addBtn);
+        
+        switchTab(tabId);
+    }
+
+    function switchTab(tabId) {
+        activeTabId = tabId;
+        document.querySelectorAll('.shell-tab').forEach(tab => tab.classList.remove('active'));
+        const activeTabBtn = document.getElementById(`shell-tab-${tabId}`);
+        if(activeTabBtn) activeTabBtn.classList.add('active');
+        
+        document.querySelectorAll('.kali-frame').forEach(frame => frame.classList.remove('active'));
+        const activeFrame = document.getElementById(`kali-frame-${tabId}`);
+        if(activeFrame) activeFrame.classList.add('active');
+    }
+
+    function closeTab(tabId) {
+        const tabBtn = document.getElementById(`shell-tab-${tabId}`);
+        const iframe = document.getElementById(`kali-frame-${tabId}`);
+        if (tabBtn) tabBtn.remove();
+        if (iframe) iframe.remove();
+        
+        tabList = tabList.filter(id => id !== tabId);
+        
+        if (activeTabId === tabId) {
+            if (tabList.length > 0) {
+                switchTab(tabList[tabList.length - 1]);
+            } else {
+                activeTabId = null;
+                shellPanel.style.display = 'none';
+                isCliRunning = false;
+            }
+        }
+    }
+
+    async function submitFlag() {
+        const flag = document.getElementById('flag-input').value;
+        if (!flag) return;
+        
+        try {
+            const res = await fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ flag })
+            });
+            const data = await res.json();
+            
+            if (data.status === 'correct') {
+                resultMsg.textContent = 'Correct! Challenge Solved.';
+                resultMsg.className = 'result success';
+            } else {
+                resultMsg.textContent = 'Wrong flag. Try again.';
+                resultMsg.className = 'result error';
+            }
+        } catch (err) {
+            resultMsg.textContent = 'Error verifying flag.';
+            resultMsg.className = 'result error';
+        }
+    }
+    
+    // Close modal if user clicks outside of it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeChallengeDetails();
+        }
+    }
+</script>
+
+</body>
+</html>
