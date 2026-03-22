@@ -81,4 +81,4 @@ The CTF Platform should now securely listen on **[http://localhost:3000](http://
 4. Docker dynamically maps the required service ports (22, 1337, 8545, 80) and reports the live connections back to the Node API.
 5. The UI dynamically renders the exact connection strings mapping back to your host network or internal Docker gateway without exposing hardcoded ports. 
 
-> *Disclaimer: Intended for local or VPN-based (e.g. Wireguard) educational deployments. If hosting publicly on a VPS, ensure proper Docker firewall rules and ratelimiting.*
+> *Disclaimer: Intended for local or VPN-based (e.g. Wireguard) educational deployments. If hosting publicly on a VPS, ensure proper Docker firewall rules and rate limiting.*
