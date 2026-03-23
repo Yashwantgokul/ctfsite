@@ -493,6 +493,18 @@
                     <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
                     <button id="btn-start-7" onclick="startInstance('7')">Deploy & Start</button>
                 </div>
+                <div class="card">
+                    <h2>8. Library SSTI</h2>
+                    <span class="badge badge-medium">Medium</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-8" onclick="startInstance('8')">Deploy & Start</button>
+                </div>
+                <div class="card">
+                    <h2>9. InstaScam</h2>
+                    <span class="badge badge-medium">Medium</span>
+                    <p class="desc-hidden">⚠️ Description hidden. Deploy instance to reveal.</p>
+                    <button id="btn-start-9" onclick="startInstance('9')">Deploy & Start</button>
+                </div>
             </div>
         </div>
 
@@ -643,6 +655,14 @@
         '7': {
             title: '7. Padam Converter',
             desc: 'You have gained access to Sundar\u2019s internal video conversion portal. This system processes and distributes pirated films. Exploit the converter to retrieve the secret distribution list. Hint: The output video itself might be the data leak channel.'
+        },
+        '8': {
+            title: '8. Library SSTI',
+            desc: 'A Library Management System lets users search for books. The search query is dynamically rendered into a Jinja2 template. Identify the SSTI vulnerability, bypass the weak sanitization, and read /flag.txt from the server.'
+        },
+        '9': {
+            title: '9. InstaScam',
+            desc: 'You are logged in as player_user and have 10 private followers. The UI never shows their posts, but some profile responses accidentally leak hidden escaped JSON with CDN media URLs. Extract all 3 leaked parts and reconstruct the flag.'
         }
     };
 
@@ -698,6 +718,14 @@
             document.getElementById('btn-start-7').textContent = "Deploy & Start";
             document.getElementById('btn-start-7').disabled = false;
         }
+        if(document.getElementById('btn-start-8')) {
+            document.getElementById('btn-start-8').textContent = "Deploy & Start";
+            document.getElementById('btn-start-8').disabled = false;
+        }
+        if(document.getElementById('btn-start-9')) {
+            document.getElementById('btn-start-9').textContent = "Deploy & Start";
+            document.getElementById('btn-start-9').disabled = false;
+        }
     }
 
     function showChallengeDetails() {
@@ -739,6 +767,10 @@
             document.getElementById('active-title').textContent = "Active Challenge: 6. Secure Vault (Blockchain)";
         } else if (activeChallengeId === '7') {
             document.getElementById('active-title').textContent = "Active Challenge: 7. Padam Converter";
+        } else if (activeChallengeId === '8') {
+            document.getElementById('active-title').textContent = "Active Challenge: 8. Library SSTI";
+        } else if (activeChallengeId === '9') {
+            document.getElementById('active-title').textContent = "Active Challenge: 9. InstaScam";
         }
 
         // Show details automatically upon successful start

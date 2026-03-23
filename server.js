@@ -67,6 +67,20 @@ const challenges = {
         type: 'http',
         username: '',
         password: ''
+    },
+    '8': {
+        image: 'library-ssti',
+        port: 5000,
+        type: 'http',
+        username: '',
+        password: ''
+    },
+    '9': {
+        image: 'instascam-leak',
+        port: 5000,
+        type: 'http',
+        username: '',
+        password: ''
     }
 };
 
@@ -75,9 +89,12 @@ exec(`docker network create ${DOCKER_NETWORK}`, () => {
     // Ignore error if it already exists
 });
 
-function generateFlag() {
+function generateFlag(challengeId) {
     const uuid = crypto.randomUUID();
     const hash = crypto.createHash('md5').update(uuid).digest('hex');
+    if (challengeId === '9') {
+        return `${hash}.yg`;
+    }
     return `${hash}.yg`;
 }
 
@@ -112,7 +129,7 @@ function startContainer(hostIp, challengeId) {
     if (!config) return Promise.reject(new Error("Invalid challenge ID"));
 
     return new Promise((resolve, reject) => {
-        const flag = generateFlag();
+        const flag = generateFlag(challengeId);
         const cmd = `docker run -d -P --network ${DOCKER_NETWORK} -e FLAG="${flag}" ${config.image}`;
 
         exec(cmd, (err, stdout, stderr) => {
